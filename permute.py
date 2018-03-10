@@ -9,7 +9,7 @@ class MatrixPermute():
         self.seed = seed
 
     def generate_numbers(self):
-        random.seed(reduce((lambda x, y: x * y), self.seed))
+        random.seed(self.seed)
         return [random.randint(0, 7) for i in range(4)]
 
     def permute(self, bits, reverse=False):

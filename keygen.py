@@ -6,7 +6,7 @@ from functools import reduce
 class KeyGenerator():
     def __init__(self, keyInput):
         self.md5_key = hashlib.md5(str(keyInput).encode('ascii')).digest()
-        self.seed = self.md5_key[0:4]
+        self.seed = self.seed_int(self.md5_key[0:4])
         self.key = self.md5_key[4:]
 
     def get_subkeys(self):
@@ -37,8 +37,8 @@ class KeyGenerator():
             bits += format(byte, 'b').zfill(8)
         return list(map(lambda x: int(x), bits))
 
-    def seed_int(self):
-        return reduce((lambda x, y: x * y), self.seed)
+    def seed_int(self, seed):
+        return reduce((lambda x, y: x * y), seed)
 
 if __name__ == '__main__':
     key_gen = KeyGenerator('hello adele')
