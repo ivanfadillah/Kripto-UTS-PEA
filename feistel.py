@@ -29,7 +29,13 @@ class Feistel():
             temp = self.rmatrix
             self.rmatrix = self.round_function(self.lmatrix, self.rmatrix, self.subkeys[i])
             self.lmatrix = temp
-            
+    
+    def decipher(self):
+        inv_subkeys = self.subkeys[::-1]
+        for i in range(16):
+            temp = self.lmatrix
+            self.lmatrix = self.round_function(self.rmatrix, self.lmatrix, inv_subkeys[i])
+            self.rmatrix = temp
     
 def xor_bit(bits1, bits2):
     bits1_str = ''.join([str(x) for x in bits1])
@@ -52,5 +58,7 @@ if __name__=='__main__':
     print(subkey)
     print(xor_bit(subkey, [0] * 64))
     f.encipher()
-    print(f.lmatrix)
-    print(f.rmatrix)
+    f.decipher()
+    print(f.lmatrix.tolist()==m0.tolist())
+    print(f.rmatrix.tolist()==m1.tolist())
+    
