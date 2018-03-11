@@ -1,5 +1,6 @@
 import hashlib
 import random
+import numpy as np
 
 from functools import reduce
 
@@ -39,9 +40,18 @@ class KeyGenerator():
 
     def seed_int(self, seed):
         return reduce((lambda x, y: x * y), seed)
+    
+def get_sbox(seed):
+    init_list = [x for x in range(256)] * 16
+    random.seed(seed)
+    random.shuffle(init_list)
+    sbox_arr = np.asarray(init_list)
+    return np.reshape(sbox_arr, (64, 64))
 
 if __name__ == '__main__':
     key_gen = KeyGenerator('hello adele')
     print(key_gen.get_subkeys())
     print(len(key_gen.get_subkeys()))
     print(len(key_gen.get_subkeys()[0]))
+    sbox_arr = get_sbox(16)
+    print(sbox_arr)
