@@ -13,7 +13,7 @@ class KeyGenerator():
         subkeys = []
         fibonacci = [1, 1]
         key_bits = self.bit_from_bytes(self.key)
-        random.seed(self.seed_int())
+        random.seed(self.seed)
         random.shuffle(key_bits)
 
         left = key_bits[:48]
@@ -43,3 +43,5 @@ class KeyGenerator():
 if __name__ == '__main__':
     key_gen = KeyGenerator('hello adele')
     print(key_gen.get_subkeys())
+    print(len(key_gen.get_subkeys()))
+    print(len(key_gen.get_subkeys()[0]))
