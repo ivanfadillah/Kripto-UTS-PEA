@@ -87,6 +87,41 @@ def OFB(text, key, init_vector, nbits, decrypt=False):
 
     return bits_to_text(bits_encrypt)
 
+def CTR(text, key, decrypt=False):
+    fullbits = text_to_bits(text)
+
+    pea = PEA(key)
+    bits_encrypt = []
+    count = create_ctr_start(key)
+    for i in range(int(len(fullbits)/256)):
+        if not decrypt:
+            bits = fullbits[(i*256):((i+1)*256)]
+            cbits = int_to_bits(count)
+            enc_res = pea.encrypt(cbits, False)
+            res = [x^y for (x,y) in zip(bits, enc_res)]
+            bits_encrypt.extend(res)
+        else:
+            bits = fullbits[(i*256):((i+1)*256)]
+            cbits = int_to_bits(count)
+            enc_res = pea.encrypt(cbits, False)
+            res = [x^y for (x,y) in zip(bits, enc_res)]
+            bits_encrypt.extend(res)
+        count += 1
+
+    return bits_to_text(bits_encrypt)
+
+def create_ctr_start(key):
+    bits = text_to_bits(key)
+    sum = 0
+    for bit in bits:
+        sum += bit
+    return sum
+
+def int_to_bits(n):
+    bits = [int(digit) for digit in bin(n)[2:]]
+    if len(bits) < 256:
+        return ([0] * (256-len(bits))) + bits
+    return bits[256:]
 
 def text_to_bits(text):
     bits_str = ''.join(['{:08b}'.format(ord(c)) for c in text])
@@ -109,6 +144,11 @@ if __name__=='__main__':
     bits = text_to_bits(text)
     print(bits)
     print(bits_to_text(bits))
+
+    print('\CTR:')
+    enc = CTR(text, text)
+    print(enc)
+    print(CTR(enc, text, True))
 
     print('\nECB:')
     enc = ECB(text, text)
