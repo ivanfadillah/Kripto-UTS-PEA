@@ -32,6 +32,61 @@ def CBC(text, key, init_vector, decrypt=False):
             bits_encrypt.extend(res)
         
     return bits_to_text(bits_encrypt)
+
+def CFB(text, key, init_vector, nbits, decrypt=False):
+    '''
+        nbits: encryption length
+    '''
+    if 256%nbits != 0:
+            raise Exception('Length of nbits must be a factor of 256!')
+    fullbits = text_to_bits(text)
+    
+    pea = PEA(key)
+    qbits = init_vector
+    bits_encrypt = []
+    for i in range(int(len(fullbits)/nbits)):
+        if not decrypt:
+            bits = fullbits[(i*nbits):((i+1)*nbits)]
+            enc_res = pea.encrypt(qbits, decrypt)
+            res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
+            bits_encrypt.extend(res)
+            qbits = qbits[:-nbits] + res
+        else:
+            bits = fullbits[(i*nbits):((i+1)*nbits)]
+            qbits = qbits[:-nbits] + bits
+            enc_res = pea.encrypt(qbits, decrypt)
+            res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
+            bits_encrypt.extend(res)
+            
+    return bits_to_text(bits_encrypt)
+
+def OFB(text, key, init_vector, nbits, decrypt=False):
+    '''
+        nbits: encryption length
+    '''
+    if 256%nbits != 0:
+            raise Exception('Length of nbits must be a factor of 256!')
+    fullbits = text_to_bits(text)
+    
+    pea = PEA(key)
+    qbits = init_vector
+    bits_encrypt = []
+    for i in range(int(len(fullbits)/nbits)):
+        if not decrypt:
+            bits = fullbits[(i*nbits):((i+1)*nbits)]
+            enc_res = pea.encrypt(qbits, decrypt)
+            res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
+            bits_encrypt.extend(res)
+            qbits = qbits[:-nbits] + enc_res[:nbits]
+        else:
+            bits = fullbits[(i*nbits):((i+1)*nbits)]
+            enc_res = pea.encrypt(qbits, decrypt)
+            qbits = qbits[:-nbits] + enc_res[:nbits]
+            res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
+            bits_encrypt.extend(res)
+            
+    return bits_to_text(bits_encrypt)
+        
         
 def text_to_bits(text):
     bits_str = ''.join(['{:08b}'.format(ord(c)) for c in text])
@@ -65,3 +120,15 @@ if __name__=='__main__':
     enc = CBC(text, text, iv)
     print(enc)
     print(CBC(enc, text, iv, True))
+    
+    print('\nCFB:')
+    iv = [1] * 256
+    enc = CFB(text, text, iv, 32)
+    print(enc)
+    print(CFB(enc, text, iv, 32, True))
+    
+    print('\nOFB:')
+    iv = [1] * 256
+    enc = OFB(text, text, iv, 32)
+    print(enc)
+    print(OFB(enc, text, iv, 32, True))
