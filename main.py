@@ -50,13 +50,15 @@ def CFB(text, key, init_vector, nbits, decrypt=False):
             enc_res = pea.encrypt(qbits, decrypt)
             res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
             bits_encrypt.extend(res)
-            qbits = qbits[:-nbits] + res
+            qbits = qbits[nbits:] + res
+            print(qbits)
         else:
             bits = fullbits[(i*nbits):((i+1)*nbits)]
-            qbits = qbits[:-nbits] + bits
+            qbits = qbits[nbits:] + bits
             enc_res = pea.encrypt(qbits, decrypt)
             res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
             bits_encrypt.extend(res)
+            print(qbits)
             
     return bits_to_text(bits_encrypt)
 
@@ -77,11 +79,11 @@ def OFB(text, key, init_vector, nbits, decrypt=False):
             enc_res = pea.encrypt(qbits, decrypt)
             res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
             bits_encrypt.extend(res)
-            qbits = qbits[:-nbits] + enc_res[:nbits]
+            qbits = qbits[nbits:] + enc_res[:nbits]
         else:
             bits = fullbits[(i*nbits):((i+1)*nbits)]
             enc_res = pea.encrypt(qbits, decrypt)
-            qbits = qbits[:-nbits] + enc_res[:nbits]
+            qbits = qbits[nbits:] + enc_res[:nbits]
             res = [x^y for (x,y) in zip(bits, enc_res[:nbits])]
             bits_encrypt.extend(res)
             
@@ -105,7 +107,7 @@ def bits_to_text(bits):
     return text
 
 if __name__=='__main__':
-    text = 'onika tanya maraj, TAKE A MEDICATION ROMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN!'
+    text = 'onika tanya maraj'
     bits = text_to_bits(text)
     print(bits)
     print(bits_to_text(bits))
