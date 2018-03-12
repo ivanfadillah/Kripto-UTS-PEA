@@ -8,7 +8,7 @@ class PEA():
         self.matrix_permute = MatrixPermute(self.key_gen.seed)
         self.subkeys = self.key_gen.get_subkeys()
         
-    def encrypt(self, bits):
+    def encrypt(self, bits, decrypt=False):
         '''
             bits: list of 0s and 1s
         '''
@@ -22,11 +22,17 @@ class PEA():
         
         subkeys_1 = self.subkeys[:16]
         f1 = Feistel(m1, m2, subkeys_1)
-        f1.encipher()
+        if decrypt:
+            f1.decipher()
+        else:
+            f1.encipher()
         
         subkeys_2 = self.subkeys[16:32]
         f2 = Feistel(m3, m4, subkeys_2)
-        f2.encipher()
+        if decrypt:
+            f2.decipher()
+        else:
+            f2.encipher()
         
         m1 = self.matrix_permute.permute(f1.lmatrix, True)
         m2 = self.matrix_permute.permute(f1.rmatrix, True)
@@ -34,3 +40,17 @@ class PEA():
         m4 = self.matrix_permute.permute(f2.rmatrix, True)
         
         return m1.tolist() + m2.tolist() + m3.tolist() + m4.tolist()
+    
+if __name__=='__main__':
+    import random
+    
+    key = 'onika maraj'
+    b = [random.randint(0, 1) for i in range(256)]
+    p = PEA(key)
+    _b = p.encrypt(b)
+    d = p.encrypt(_b, True)
+    
+    print(b)
+    print(_b)
+    print(d)
+    print(b==d)
