@@ -1,4 +1,9 @@
 from pea import PEA
+from collections import Counter
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
+import time
 
 def ECB(text, key, decrypt=False):
     fullbits = text_to_bits(text)
@@ -139,36 +144,118 @@ def bits_to_text(bits):
 
     return text
 
+def text_to_hex(text):
+    hex_list = []
+    for c in text:
+        h = hex(ord(c))
+        h = h[2:].upper()
+        if len(h) == 1:
+            h = '0' + h
+        hex_list.append(h)
+    
+    return ' '.join(hex_list)
+
+def freq_byte(bits):
+    byte_set = Counter()
+    for i in range(int(len(bits)/8)):
+        byte = bits[(i*8):((i+1)*8)]
+        bits_str = ''.join([str(x) for x in byte])
+        decimal = int(bits_str, 2)
+        byte_set.update([decimal])
+        
+    keys, vals = np.arange(0,256).tolist(), [0] * 256
+    for key in list(byte_set.keys()):
+        vals[key] = byte_set[key]
+    return keys, vals
+
+def plot_encryption(bits_plain, bits_cipher):
+    keys1, vals1 = freq_byte(bits_plain)
+    keys2, vals2 = freq_byte(bits_cipher)
+    plt.plot(keys1, vals1, 'r-', keys2, vals2, 'b-')
+    axes = plt.gca()
+    axes.set_xlim([0,255])
+    
+    red_patch = mpatches.Patch(color='red', label='Plainteks')
+    blue_patch = mpatches.Patch(color='blue', label='Cipherteks')
+    plt.legend(handles=[red_patch, blue_patch])
+    plt.show()
+    
+def write_to(file, text):
+    with open(file, 'w') as f:
+        f.write(text)
+
 if __name__=='__main__':
-    text = 'onika tanya maraj'
+    with open('mars.txt', 'r') as f:
+        text = f.read()
+    key = 'INFORMATIKA2018'
+    key_ = 'INFORMATIKA2017'
+    print(len(text))
     bits = text_to_bits(text)
     print(bits)
     print(bits_to_text(bits))
 
-    print('\CTR:')
-    enc = CTR(text, text)
-    print(enc)
-    print(CTR(enc, text, True))
+    # File names
+    in_name = 'lena.png'
+    out_name = 'lena_out.png'
+    
+    # Read data and convert to a list of bits
+    in_bytes = np.fromfile(in_name, dtype = "uint8")
+    in_bits = np.unpackbits(in_bytes)
+    data = list(in_bits)
+    text = bits_to_text(data)
 
     print('\nECB:')
-    enc = ECB(text, text)
-    print(enc)
-    print(ECB(enc, text, True))
+    enc = ECB(text, key)
+    hex_enc = text_to_hex(enc)
+    write_to('enc.txt', hex_enc)
+    start = time.time()
+    data = ECB(enc, key, True)
+    end = time.time()
+    # plot_encryption(text_to_bits(text), text_to_bits(enc))
+    print(end - start)
+    
+    # Convert the list of bits back to bytes and save
+    out_bits = np.array(data)
+    out_bytes = np.packbits(out_bits)
+    out_bytes.tofile(out_name)
 
+    """
     print('\nCBC:')
     iv = [1] * 256
-    enc = CBC(text, text, iv)
-    print(enc)
-    print(CBC(enc, text, iv, True))
+    enc = CBC(text, key, iv)
+    print(text_to_hex(enc))
+    start = time.time()
+    print(CBC(enc, key, iv, True))
+    end = time.time()
+    # plot_encryption(text_to_bits(text), text_to_bits(enc))
+    print(end - start)
 
     print('\nCFB:')
     iv = [1] * 256
-    enc = CFB(text, text, iv, 256)
-    print(enc)
-    print(CFB(enc, text, iv, 256, True))
+    enc = CFB(text, key, iv, 256)
+    print(text_to_hex(enc))
+    start = time.time()
+    print(CFB(enc, key, iv, 256, True))
+    end = time.time()
+    # plot_encryption(text_to_bits(text), text_to_bits(enc))
+    print(end - start)
 
     print('\nOFB:')
     iv = [1] * 256
-    enc = OFB(text, text, iv, 256)
-    print(enc)
-    print(OFB(enc, text, iv, 256, True))
+    enc = OFB(text, key, iv, 256)
+    print(text_to_hex(enc))
+    start = time.time()
+    print(OFB(enc, key, iv, 256, True))
+    end = time.time()
+    # plot_encryption(text_to_bits(text), text_to_bits(enc))
+    print(end - start)
+
+    print('\nCTR:')
+    enc = CTR(text, key)
+    print(text_to_hex(enc))
+    start = time.time()
+    print(CTR(enc, key, True))
+    end = time.time()
+    # plot_encryption(text_to_bits(text), text_to_bits(enc))
+    print(end - start)
+    """
